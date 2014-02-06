@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="dwz.persistence.mapper.SysCompanyMapper">
+	<resultMap id="rm" type="dwz.persistence.beans.SysCompany">
+		<result property="id" jdbcType="INTEGER" column="ID"/>
+		<result property="name" jdbcType="VARCHAR" column="NAME"/>
+		<result property="contactName" jdbcType="VARCHAR" column="CONTACT_NAME"/>
+		<result property="email" jdbcType="VARCHAR" column="EMAIL"/>
+		<result property="phone" jdbcType="VARCHAR" column="PHONE"/>
+		<result property="status" jdbcType="CHAR" column="STATUS"/>
+		<result property="startDate" jdbcType="DATE" column="START_DATE"/>
+		<result property="expiryDate" jdbcType="DATE" column="EXPIRY_DATE"/>
+		<result property="remark" jdbcType="VARCHAR" column="REMARK"/>
+		<result property="ipRange" jdbcType="VARCHAR" column="IP_RANGE"/>
+		<result property="insertDate" jdbcType="TIMESTAMP" column="INSERT_DATE"/>
+		<result property="updateDate" jdbcType="TIMESTAMP" column="UPDATE_DATE"/>
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID,
+		NAME,
+		CONTACT_NAME,
+		EMAIL,
+		PHONE,
+		STATUS,
+		START_DATE,
+		EXPIRY_DATE,
+		REMARK,
+		IP_RANGE,
+		INSERT_DATE,
+		UPDATE_DATE
+	</sql>
+	<select id="load" parameterType="java.lang.Integer" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM sys_company 
+		WHERE 
+			ID = #{id} 
+	</select>
+	<!-- 查询所有的ID -->
+	<select id="findAllIds" resultType="java.lang.Integer">
+		SELECT ID FROM sys_company
+	</select>
+
+	<!-- 按Id删除 -->
+	<delete id="delete" parameterType="java.lang.Integer">
+		DELETE FROM sys_company WHERE
+		ID = #{id} 
+	</delete>
+	 <!-- 插入 -->
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO sys_company (
+			ID,
+			NAME,
+			CONTACT_NAME,
+			EMAIL,
+			PHONE,
+			STATUS,
+			START_DATE,
+			EXPIRY_DATE,
+			REMARK,
+			IP_RANGE,
+			INSERT_DATE,
+			UPDATE_DATE
+		) VALUES (
+			#{id},
+			#{name},
+			#{contactName},
+			#{email},
+			#{phone},
+			#{status},
+			#{startDate},
+			#{expiryDate},
+			#{remark},
+			#{ipRange},
+			#{insertDate},
+			#{updateDate}
+		)
+	</insert>
+	
+	<select id="countAll" resultType="java.lang.Integer">
+		SELECT count(ID) FROM sys_company	
+	</select>
+	
+	<select id="findAll" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM sys_company
+	</select>
+	
+	<!-- 更新 -->
+	<update id="updateSelective" parameterType="dwz.persistence.beans.SysCompany">
+		UPDATE sys_company 
+			<set>
+				<if test="name!=null">
+				NAME = #{name},
+				</if>
+				<if test="contactName!=null">
+				CONTACT_NAME = #{contactName},
+				</if>
+				<if test="email!=null">
+				EMAIL = #{email},
+				</if>
+				<if test="phone!=null">
+				PHONE = #{phone},
+				</if>
+				<if test="status!=null">
+				STATUS = #{status},
+				</if>
+				<if test="startDate!=null">
+				START_DATE = #{startDate},
+				</if>
+				<if test="expiryDate!=null">
+				EXPIRY_DATE = #{expiryDate},
+				</if>
+				<if test="remark!=null">
+				REMARK = #{remark},
+				</if>
+				<if test="ipRange!=null">
+				IP_RANGE = #{ipRange},
+				</if>
+				<if test="insertDate!=null">
+				INSERT_DATE = #{insertDate},
+				</if>
+				<if test="updateDate!=null">
+				UPDATE_DATE = #{updateDate}
+				</if>
+			</set>
+		WHERE 
+			ID = #{id}
+	</update>
+	
+	<update id="update" parameterType="dwz.persistence.beans.SysCompany">
+		UPDATE sys_company SET
+			NAME = #{name},
+			CONTACT_NAME = #{contactName},
+			EMAIL = #{email},
+			PHONE = #{phone},
+			STATUS = #{status},
+			START_DATE = #{startDate},
+			EXPIRY_DATE = #{expiryDate},
+			REMARK = #{remark},
+			IP_RANGE = #{ipRange},
+			INSERT_DATE = #{insertDate},
+			UPDATE_DATE = #{updateDate}
+		WHERE 
+			ID = #{id} 
+	</update>
+	
+	
+	<update id="updateStatus" parameterType="map">
+		UPDATE sys_company SET
+			STATUS = #{status},
+			UPDATE_DATE = #{updateDate}
+		WHERE 
+			ID = #{id} 
+	</update>
+	
+	<select id="findPageBreakByCondition" resultMap="rm" parameterType="map">
+		SELECT 
+	        <include refid="Base_Column_List" />
+		from sys_company  
+
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<choose>
+			<when test="status != null">
+				 AND STATUS=#{status}  
+			</when>
+			<otherwise>
+				 AND STATUS!='DELETED'
+			</otherwise>
+			</choose>
+			<if test="startInsertDate != null">
+				 AND INSERT_DATE &gt;= #{startInsertDate} 
+			</if>
+			<if test="endInsertDate != null">
+				 AND INSERT_DATE &lt;= #{endInsertDate} 
+			</if>
+			<if test="keywords != null">
+				AND (
+					NAME LIKE "%"#{keywords}"%"
+					or CONTACT_NAME LIKE "%"#{keywords}"%"
+					or EMAIL LIKE "%"#{keywords}"%"
+					or PHONE LIKE "%"#{keywords}"%"
+				)
+      		</if>
+      	</trim>
+
+      	order by INSERT_DATE DESC 
+	</select>
+	<select id="findNumberByCondition" resultType="java.lang.Integer" parameterType="map">
+		select count(0) as a from sys_company
+
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<choose>
+			<when test="status != null">
+				 AND STATUS=#{status}  
+			</when>
+			<otherwise>
+				 AND STATUS!='DELETED'
+			</otherwise>
+			</choose>
+			<if test="startInsertDate != null">
+				 AND INSERT_DATE &gt;= #{startInsertDate} 
+			</if>
+			<if test="endInsertDate != null">
+				 AND INSERT_DATE &lt;= #{endInsertDate} 
+			</if>
+			<if test="keywords != null">
+				AND (
+					NAME LIKE "%"#{keywords}"%"
+					or CONTACT_NAME LIKE "%"#{keywords}"%"
+					or EMAIL LIKE "%"#{keywords}"%"
+					or PHONE LIKE "%"#{keywords}"%"
+				)
+      		</if>
+      	</trim>
+
+	</select>
+</mapper>
+

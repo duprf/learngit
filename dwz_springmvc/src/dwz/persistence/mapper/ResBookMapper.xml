@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="dwz.persistence.mapper.ResBookMapper">
+	<resultMap id="rm" type="dwz.persistence.beans.ResBook">
+		<result property="id" jdbcType="INTEGER" column="ID"/>
+		<result property="categoryId" jdbcType="INTEGER" column="CATEGORY_ID"/>
+		<result property="sn" jdbcType="VARCHAR" column="SN"/>
+		<result property="nameCn" jdbcType="VARCHAR" column="NAME_CN"/>
+		<result property="nameEn" jdbcType="VARCHAR" column="NAME_EN"/>
+		<result property="publishingId" jdbcType="INTEGER" column="PUBLISHING_ID"/>
+		<result property="publishDate" jdbcType="DATE" column="PUBLISH_DATE"/>
+		<result property="iconPath" jdbcType="VARCHAR" column="ICON_PATH"/>
+		<result property="description" jdbcType="LONGVARCHAR" column="DESCRIPTION"/>
+		<result property="insertDate" jdbcType="TIMESTAMP" column="INSERT_DATE"/>
+		<result property="updateDate" jdbcType="TIMESTAMP" column="UPDATE_DATE"/>
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID,
+		CATEGORY_ID,
+		SN,
+		NAME_CN,
+		NAME_EN,
+		PUBLISHING_ID,
+		PUBLISH_DATE,
+		ICON_PATH,
+		DESCRIPTION,
+		INSERT_DATE,
+		UPDATE_DATE
+	</sql>
+	<select id="load" parameterType="java.lang.Integer" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM res_book 
+		WHERE 
+			ID = #{id} 
+	</select>
+	<!-- 查询所有的ID -->
+	<select id="findAllIds" resultType="java.lang.Integer">
+		SELECT ID FROM res_book
+	</select>
+
+	<!-- 按Id删除 -->
+	<delete id="delete" parameterType="java.lang.Integer">
+		DELETE FROM res_book WHERE
+		ID = #{id} 
+	</delete>
+	 <!-- 插入 -->
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO res_book (
+			ID,
+			CATEGORY_ID,
+			SN,
+			NAME_CN,
+			NAME_EN,
+			PUBLISHING_ID,
+			PUBLISH_DATE,
+			ICON_PATH,
+			DESCRIPTION,
+			INSERT_DATE,
+			UPDATE_DATE
+		) VALUES (
+			#{id},
+			#{categoryId},
+			#{sn},
+			#{nameCn},
+			#{nameEn},
+			#{publishingId},
+			#{publishDate},
+			#{iconPath},
+			#{description},
+			#{insertDate},
+			#{updateDate}
+		)
+	</insert>
+	
+	<select id="countAll" resultType="java.lang.Integer">
+		SELECT count(ID) FROM res_book	
+	</select>
+	
+	<select id="findAll" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM res_book
+	</select>
+	
+	<!-- 更新 -->
+	<update id="updateSelective" parameterType="dwz.persistence.beans.ResBook">
+		UPDATE res_book 
+			<set>
+				<if test="categoryId!=null">
+				CATEGORY_ID = #{categoryId},
+				</if>
+				<if test="sn!=null">
+				SN = #{sn},
+				</if>
+				<if test="nameCn!=null">
+				NAME_CN = #{nameCn},
+				</if>
+				<if test="nameEn!=null">
+				NAME_EN = #{nameEn},
+				</if>
+				<if test="publishingId!=null">
+				PUBLISHING_ID = #{publishingId},
+				</if>
+				<if test="publishDate!=null">
+				PUBLISH_DATE = #{publishDate},
+				</if>
+				<if test="iconPath!=null">
+				ICON_PATH = #{iconPath},
+				</if>
+				<if test="description!=null">
+				DESCRIPTION = #{description},
+				</if>
+				<if test="insertDate!=null">
+				INSERT_DATE = #{insertDate},
+				</if>
+				<if test="updateDate!=null">
+				UPDATE_DATE = #{updateDate}
+				</if>
+			</set>
+		WHERE 
+			ID = #{id}
+	</update>
+	
+	<update id="update" parameterType="dwz.persistence.beans.ResBook">
+		UPDATE res_book SET
+			CATEGORY_ID = #{categoryId},
+			SN = #{sn},
+			NAME_CN = #{nameCn},
+			NAME_EN = #{nameEn},
+			PUBLISHING_ID = #{publishingId},
+			PUBLISH_DATE = #{publishDate},
+			ICON_PATH = #{iconPath},
+			DESCRIPTION = #{description},
+			INSERT_DATE = #{insertDate},
+			UPDATE_DATE = #{updateDate}
+		WHERE 
+			ID = #{id} 
+	</update>
+	
+	<select id="findPageBreakByCondition" resultMap="rm" parameterType="map">
+		SELECT 
+	        <include refid="Base_Column_List" />
+		from res_book c  
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+		    <if test="relativeId != null">
+				AND c.RELATIVE_ID = #{relativeId} 
+      		</if>
+      		<if test="relativeType != null">
+				AND c.RELATIVE_TYPE = #{relativeType} 
+      		</if>
+			<if test="startDate != null">
+				AND c.INSERT_DATE &gt;= #{startDate} 
+			</if>
+			<if test="endDate != null">
+				AND c.INSERT_DATE &lt;= #{endDate} 
+			</if>
+			<if test="keywords != null">
+				AND (
+					c.NAME_CN LIKE "%"#{keywords}"%"
+					or c.NAME_EN LIKE "%"#{keywords}"%"
+					or c.SN LIKE "%"#{keywords}"%"
+				)
+      		</if>
+      	</trim>
+
+      	<choose>
+			<when test="orderField !=null and orderField !=''">
+				 ORDER BY c.${orderField} <if test="orderDirection != null and orderDirection != ''">${orderDirection}</if>
+			</when>
+			<otherwise>
+				 order by c.INSERT_DATE DESC 
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findNumberByCondition" resultType="java.lang.Integer" parameterType="map">
+		select count(0) as a from res_book c
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+		    <if test="relativeId != null">
+				AND c.RELATIVE_ID = #{relativeId} 
+      		</if>
+      		<if test="relativeType != null">
+				AND c.RELATIVE_TYPE = #{relativeType} 
+      		</if>
+			<if test="startDate != null">
+				AND c.INSERT_DATE &gt;= #{startDate} 
+			</if>
+			<if test="endDate != null">
+				AND c.INSERT_DATE &lt;= #{endDate} 
+			</if>
+			<if test="keywords != null">
+				AND (
+					c.NAME_CN LIKE "%"#{keywords}"%"
+					or c.NAME_EN LIKE "%"#{keywords}"%"
+					or c.SN LIKE "%"#{keywords}"%"
+				)
+      		</if>
+      	</trim>
+	</select>
+</mapper>
+

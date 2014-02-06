@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="dwz.persistence.mapper.ComCategoryMapper">
+	<resultMap id="rm" type="dwz.persistence.beans.ComCategory">
+		<result property="id" jdbcType="INTEGER" column="ID"/>
+		<result property="sn" jdbcType="VARCHAR" column="SN"/>
+		<result property="name" jdbcType="VARCHAR" column="NAME"/>
+		<result property="pid" jdbcType="INTEGER" column="PID"/>
+		<result property="lft" jdbcType="INTEGER" column="LFT"/>
+		<result property="rgt" jdbcType="INTEGER" column="RGT"/>
+		<result property="depth" jdbcType="INTEGER" column="DEPTH"/>
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID,
+		SN,
+		NAME,
+		PID,
+		LFT,
+		RGT
+	</sql>
+	<select id="load" parameterType="java.lang.Integer" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM com_category 
+		WHERE 
+			ID = #{id} 
+	</select>
+	<!-- 查询所有的ID -->
+	<select id="findAllIds" resultType="java.lang.Integer">
+		SELECT ID FROM com_category
+	</select>
+
+	<!-- 按Id删除 -->
+	<delete id="delete" parameterType="java.lang.Integer">
+		DELETE FROM com_category WHERE
+		ID = #{id} 
+	</delete>
+	 <!-- 插入 -->
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO com_category (
+			ID,
+			SN,
+			NAME,
+			PID,
+			LFT,
+			RGT
+		) VALUES (
+			#{id},
+			#{sn},
+			#{name},
+			#{pid},
+			#{lft},
+			#{rgt}
+		)
+	</insert>
+	
+	<select id="countAll" resultType="java.lang.Integer">
+		SELECT count(ID) FROM com_category	
+	</select>
+	
+	<select id="findAll" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM com_category
+	</select>
+	
+	<!-- 更新 -->
+	<update id="updateSelective" parameterType="dwz.persistence.beans.ComCategory">
+		UPDATE com_category 
+			<set>
+				<if test="sn!=null">
+				SN = #{sn},
+				</if>
+				<if test="name!=null">
+				NAME = #{name},
+				</if>
+				<if test="pid!=null">
+				PID = #{pid},
+				</if>
+				<if test="lft!=null">
+				LFT = #{lft},
+				</if>
+				<if test="rgt!=null">
+				RGT = #{rgt}
+				</if>
+			</set>
+		WHERE 
+			ID = #{id}
+	</update>
+	
+	<update id="update" parameterType="dwz.persistence.beans.ComCategory">
+		UPDATE com_category SET
+			SN = #{sn},
+			NAME = #{name},
+			PID = #{pid},
+			LFT = #{lft},
+			RGT = #{rgt}
+		WHERE 
+			ID = #{id} 
+	</update>
+	
+	<select id="findPageBreakByCondition" resultMap="rm" parameterType="dwz.persistence.BaseConditionVO">
+		SELECT 
+			node.ID, node.PID, node.SN, node.LFT, node.RGT, COUNT(parent.ID)-1 as DEPTH, node.NAME
+		FROM com_category AS node, com_category AS parent
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			node.lft BETWEEN parent.lft AND parent.rgt AND node.ID>1
+			<if test="type =='notTop'">
+				AND node.PID > 1
+      		</if>
+			<if test="keywords != null and keywords!=''">
+				AND (
+					node.SN like #{keywords}"%"
+					or node.NAME like "%"#{keywords}"%"
+				)
+      		</if>
+      		GROUP BY node.id
+      		<choose>
+			<when test="orderField !=null and orderField !=''">
+				 ORDER BY ${orderField} <if test="orderDirection != null and orderDirection != ''">${orderDirection}</if>
+			</when>
+			<otherwise>
+				 ORDER BY node.lft
+			</otherwise>
+			</choose>
+		</trim>
+	</select>
+	<select id="findNumberByCondition" resultType="java.lang.Integer" parameterType="dwz.persistence.BaseConditionVO">
+		SELECT count(0) as c
+		FROM com_category
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			AND ID > 1
+			<if test="keywords!=null and keywords!=''">
+				AND (
+					SN like "%"#{keywords}"%"
+					or NAME like "%"#{keywords}"%"
+				)
+      		</if>
+		</trim>
+	</select>
+	<select id="findNumberByPid" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+		SELECT count(0) as c
+		FROM com_category where PID=#{pid}
+	</select>
+	<select id="findBookNumberById" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+		SELECT count(0) as c
+		FROM res_book where CATEGORY_ID=#{id}
+	</select>
+	<select id="findByPid" resultMap="rm" parameterType="java.lang.Integer">
+		SELECT <include refid="Base_Column_List" />
+		FROM com_category where PID=#{pid}
+	</select>
+	<select id="findParentCategories" resultMap="rm" parameterType="java.lang.Integer">
+		SELECT parent.* FROM com_category AS node, com_category AS parent 
+		WHERE node.LFT BETWEEN parent.LFT AND parent.RGT AND parent.ID>1 AND node.id=#{categoryId} ORDER BY LFT;
+	</select>
+	
+	<select id="procsCategoryInit" statementType="CALLABLE">
+	<![CDATA[
+		{call com_category_pro (#{lft,mode=IN},#{pid,mode=IN},#{result,mode=OUT,jdbcType=INTEGER})}
+	]]>
+	</select>
+</mapper>
+

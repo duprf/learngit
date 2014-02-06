@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="dwz.persistence.mapper.ResChapterAuthorizerMapper">
+	<resultMap id="rm" type="dwz.persistence.beans.ResChapterAuthorizer">
+		<result property="id" jdbcType="INTEGER" column="ID"/>
+		<result property="chapterId" jdbcType="INTEGER" column="CHAPTER_ID"/>
+		<result property="relativeId" jdbcType="INTEGER" column="RELATIVE_ID"/>
+		<result property="relativeType" jdbcType="CHAR" column="RELATIVE_TYPE"/>
+		<result property="sequence" jdbcType="INTEGER" column="SEQUENCE"/>
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID,
+		CHAPTER_ID,
+		RELATIVE_ID,
+		RELATIVE_TYPE,
+		SEQUENCE
+	</sql>
+	<select id="load" parameterType="java.lang.Integer" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM res_chapter_authorizer 
+		WHERE 
+			ID = #{id} 
+	</select>
+	<!-- 查询所有的ID -->
+	<select id="findAllIds" resultType="java.lang.Integer">
+		SELECT ID FROM res_chapter_authorizer
+	</select>
+
+	<!-- 按Id删除 -->
+	<delete id="delete" parameterType="java.lang.Integer">
+		DELETE FROM res_chapter_authorizer WHERE
+		ID = #{id} 
+	</delete>
+	<!-- 按ChapterId删除 -->
+	<delete id="deleteByChapterId" parameterType="java.lang.Integer">
+		DELETE FROM res_chapter_authorizer WHERE
+		CHAPTER_ID = #{chapterId} 
+	</delete>
+	 <!-- 插入 -->
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO res_chapter_authorizer (
+			ID,
+			CHAPTER_ID,
+			RELATIVE_ID,
+			RELATIVE_TYPE,
+			SEQUENCE
+		) VALUES (
+			#{id},
+			#{chapterId},
+			#{relativeId},
+			#{relativeType},
+			#{sequence}
+		)
+	</insert>
+	
+	<select id="countAll" resultType="java.lang.Integer">
+		SELECT count(ID) FROM res_chapter_authorizer	
+	</select>
+	
+	<select id="findAll" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM res_chapter_authorizer
+	</select>
+	<select id="findChapterAuthorizer" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM res_chapter_authorizer
+		WHERE
+			CHAPTER_ID = #{chapterId} 
+		ORDER BY SEQUENCE
+	</select>
+	
+	<!-- 更新 -->
+	<update id="updateSelective" parameterType="dwz.persistence.beans.ResChapterAuthorizer">
+		UPDATE res_chapter_authorizer 
+			<set>
+				<if test="chapterId!=null">
+				CHAPTER_ID = #{chapterId},
+				</if>
+				<if test="relativeId!=null">
+				RELATIVE_ID = #{relativeId},
+				</if>
+				<if test="relativeType!=null">
+				RELATIVE_TYPE = #{relativeType},
+				</if>
+				<if test="sequence!=null">
+				SEQUENCE = #{sequence}
+				</if>
+			</set>
+		WHERE 
+			ID = #{id}
+	</update>
+	
+	<update id="update" parameterType="dwz.persistence.beans.ResChapterAuthorizer">
+		UPDATE res_chapter_authorizer SET
+			CHAPTER_ID = #{chapterId},
+			RELATIVE_ID = #{relativeId},
+			RELATIVE_TYPE = #{relativeType},
+			SEQUENCE = #{sequence}
+		WHERE 
+			ID = #{id} 
+	</update>
+	
+	<select id="countByRelativeIdAndType" resultType="java.lang.Integer" parameterType="map">
+		SELECT count(ID) FROM res_chapter_authorizer where RELATIVE_ID = #{relativeId} and RELATIVE_TYPE = #{relativeType}
+	</select>
+</mapper>
+

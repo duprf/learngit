@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="dwz.persistence.mapper.ResChapterMapper">
+	<resultMap id="rm" type="dwz.persistence.beans.ResChapter">
+		<result property="id" jdbcType="INTEGER" column="ID"/>
+		<result property="relativeId" jdbcType="INTEGER" column="RELATIVE_ID"/>
+		<result property="relativeType" jdbcType="VARCHAR" column="RELATIVE_TYPE"/>
+		<result property="chapterNo" jdbcType="VARCHAR" column="CHAPTER_NO"/>
+		<result property="categoryId1" jdbcType="INTEGER" column="CATEGORY_ID1"/>
+		<result property="categoryId2" jdbcType="INTEGER" column="CATEGORY_ID2"/>
+		<result property="nameCn" jdbcType="VARCHAR" column="NAME_CN"/>
+		<result property="nameEn" jdbcType="VARCHAR" column="NAME_EN"/>
+		<result property="summary" jdbcType="VARCHAR" column="SUMMARY"/>
+		<result property="path" jdbcType="VARCHAR" column="PATH"/>
+		<result property="keywords" jdbcType="VARCHAR" column="KEYWORDS"/>
+		<result property="initContent" jdbcType="BIT" column="INIT_CONTENT"/>
+		<result property="startPageNo" jdbcType="INTEGER" column="START_PAGE_NO"/>
+		<result property="pageCount" jdbcType="INTEGER" column="PAGE_COUNT"/>
+		<result property="publicCount" jdbcType="INTEGER" column="PUBLIC_COUNT"/>
+		<result property="status" jdbcType="CHAR" column="STATUS"/>
+		<result property="insertDate" jdbcType="TIMESTAMP" column="INSERT_DATE"/>
+		<result property="updateDate" jdbcType="TIMESTAMP" column="UPDATE_DATE"/>
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID,
+		RELATIVE_ID,
+		RELATIVE_TYPE,
+		CHAPTER_NO,
+		CATEGORY_ID1,
+		CATEGORY_ID2,
+		NAME_CN,
+		NAME_EN,
+		SUMMARY,
+		PATH,
+		KEYWORDS,
+		INIT_CONTENT,
+		START_PAGE_NO,
+		PAGE_COUNT,
+		PUBLIC_COUNT,
+		STATUS,
+		INSERT_DATE,
+		UPDATE_DATE
+	</sql>
+	<select id="load" parameterType="java.lang.Integer" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM res_chapter 
+		WHERE 
+			ID = #{id} 
+	</select>
+	<!-- 查询所有的ID -->
+	<select id="findAllIds" resultType="java.lang.Integer">
+		SELECT ID FROM res_chapter
+	</select>
+
+	<select id="findPageBreakByCondition" resultMap="rm" parameterType="map">
+		SELECT 
+	        <include refid="Base_Column_List" />
+		from res_chapter c  
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			c.STATUS != 'delete'
+		    <if test="relativeId != null">
+				AND c.RELATIVE_ID = #{relativeId} 
+      		</if>
+      		<if test="relativeType != null">
+				AND c.RELATIVE_TYPE = #{relativeType} 
+      		</if>
+			<if test="startDate != null">
+				AND c.INSERT_DATE &gt;= #{startDate} 
+			</if>
+			<if test="endDate != null">
+				AND c.INSERT_DATE &lt;= #{endDate} 
+			</if>
+			<if test="keywords != null">
+				AND (
+					c.NAME_CN LIKE "%"#{keywords}"%"
+					or c.NAME_EN LIKE "%"#{keywords}"%"
+					or c.KEYWORDS LIKE "%"#{keywords}"%"
+				)
+      		</if>
+      	</trim>
+      	
+      	<choose>
+			<when test="orderField !=null and orderField !=''">
+				 ORDER BY c.${orderField} <if test="orderDirection != null and orderDirection != ''">${orderDirection}</if>
+			</when>
+			<otherwise>
+				 order by c.INSERT_DATE DESC 
+			</otherwise>
+		</choose>
+      	
+	</select>
+	<select id="findNumberByCondition" resultType="java.lang.Integer" parameterType="map">
+		select count(0) as a from res_chapter c
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			c.STATUS != 'delete'
+		    <if test="relativeId != null">
+				AND c.RELATIVE_ID = #{relativeId} 
+      		</if>
+      		<if test="relativeType != null">
+				AND c.RELATIVE_TYPE = #{relativeType} 
+      		</if>
+			<if test="startDate != null">
+				AND c.INSERT_DATE &gt;= #{startDate} 
+			</if>
+			<if test="endDate != null">
+				AND c.INSERT_DATE &lt;= #{endDate} 
+			</if>
+			<if test="keywords != null">
+				AND (
+					c.NAME_CN LIKE "%"#{keywords}"%"
+					or c.NAME_EN LIKE "%"#{keywords}"%"
+					or c.KEYWORDS LIKE "%"#{keywords}"%"
+				)
+      		</if>
+      	</trim>
+	</select>
+	<select id="findByRelativeIdAndType" parameterType="java.lang.Integer"
+		resultMap="rm">
+		select 
+	        <include refid="Base_Column_List" />
+		from res_chapter c where c.RELATIVE_ID = #{relativeId} and c.RELATIVE_TYPE = #{relativeType} and c.STATUS != 'delete'
+	</select>
+	
+	<select id="findNotInitContent" parameterType="java.lang.Integer" resultMap="rm">
+		SELECT ID, PATH
+		FROM res_chapter WHERE INIT_CONTENT != 1 and STATUS != 'delete'
+	</select>
+	
+	<!-- 按Id删除 -->
+	<delete id="delete" parameterType="java.lang.Integer">
+		DELETE FROM res_chapter WHERE
+		ID = #{id} 
+	</delete>
+	 <!-- 插入 -->
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO res_chapter (
+			ID,
+			RELATIVE_ID,
+			RELATIVE_TYPE,
+			CHAPTER_NO,
+			CATEGORY_ID1,
+			CATEGORY_ID2,
+			NAME_CN,
+			NAME_EN,
+			SUMMARY,
+			PATH,
+			KEYWORDS,
+			INIT_CONTENT,
+			START_PAGE_NO,
+			PAGE_COUNT,
+			PUBLIC_COUNT,
+			STATUS,
+			INSERT_DATE,
+			UPDATE_DATE
+		) VALUES (
+			#{id},
+			#{relativeId},
+			#{relativeType},
+			#{chapterNo},
+			#{categoryId1},
+			#{categoryId2},
+			#{nameCn},
+			#{nameEn},
+			#{summary},
+			#{path},
+			#{keywords},
+			#{initContent},
+			#{startPageNo},
+			#{pageCount},
+			#{publicCount},
+			#{status},
+			#{insertDate},
+			#{updateDate}
+		)
+	</insert>
+	
+	<select id="countAll" resultType="java.lang.Integer">
+		SELECT count(ID) FROM res_chapter	
+	</select>
+	
+	<select id="findAll" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM res_chapter
+	</select>
+	
+	<!-- 更新 -->
+	<update id="updateSelective" parameterType="dwz.persistence.beans.ResChapter">
+		UPDATE res_chapter 
+			<set>
+				<if test="relativeId!=null">
+				RELATIVE_ID = #{relativeId},
+				</if>
+				<if test="relativeType!=null">
+				RELATIVE_TYPE = #{relativeType},
+				</if>
+				<if test="chapterNo!=null">
+				CHAPTER_NO = #{chapterNo},
+				</if>
+				<if test="categoryId1!=null">
+				CATEGORY_ID1 = #{categoryId1},
+				</if>
+				<if test="categoryId2!=null">
+				CATEGORY_ID2 = #{categoryId2},
+				</if>
+				<if test="nameCn!=null">
+				NAME_CN = #{nameCn},
+				</if>
+				<if test="nameEn!=null">
+				NAME_EN = #{nameEn},
+				</if>
+				<if test="summary!=null">
+				SUMMARY = #{summary},
+				</if>
+				<if test="path!=null">
+				PATH = #{path},
+				</if>
+				<if test="keywords!=null">
+				KEYWORDS = #{keywords},
+				</if>
+				<if test="initContent!=null">
+				INIT_CONTENT = #{initContent},
+				</if>
+				<if test="startPageNo!=null">
+				START_PAGE_NO = #{startPageNo},
+				</if>
+				<if test="pageCount!=null">
+				PAGE_COUNT = #{pageCount},
+				</if>
+				<if test="publicCount!=null">
+				PUBLIC_COUNT = #{publicCount},
+				</if>
+				<if test="status!=null">
+				STATUS = #{status},
+				</if>
+				<if test="insertDate!=null">
+				INSERT_DATE = #{insertDate},
+				</if>
+				<if test="updateDate!=null">
+				UPDATE_DATE = #{updateDate}
+				</if>
+			</set>
+		WHERE 
+			ID = #{id}
+	</update>
+	
+	<update id="update" parameterType="dwz.persistence.beans.ResChapter">
+		UPDATE res_chapter SET
+			RELATIVE_ID = #{relativeId},
+			RELATIVE_TYPE = #{relativeType},
+			CHAPTER_NO = #{chapterNo},
+			CATEGORY_ID1 = #{categoryId1},
+			CATEGORY_ID2 = #{categoryId2},
+			NAME_CN = #{nameCn},
+			NAME_EN = #{nameEn},
+			SUMMARY = #{summary},
+			PATH = #{path},
+			KEYWORDS = #{keywords},
+			INIT_CONTENT = #{initContent},
+			START_PAGE_NO = #{startPageNo},
+			PAGE_COUNT = #{pageCount},
+			PUBLIC_COUNT = #{publicCount},
+			STATUS = #{status},
+			INSERT_DATE = #{insertDate},
+			UPDATE_DATE = #{updateDate}
+		WHERE 
+			ID = #{id} 
+	</update>
+	
+	<update id="updateStatus" parameterType="map">
+		UPDATE res_chapter SET
+			STATUS = #{status},
+			UPDATE_DATE = #{updateDate}
+		WHERE 
+			ID = #{id} 
+	</update>
+	
+	<select id="countByAuthorId" resultType="java.lang.Integer" parameterType="map">
+		SELECT count(ID) FROM res_chapter where AUTHOR_ID = #{authorId} and STATUS != 'delete'
+	</select>
+	<select id="countByRelativeIdAndType" resultType="java.lang.Integer" parameterType="map">
+		SELECT count(ID) FROM res_chapter where RELATIVE_ID = #{relativeId} and RELATIVE_TYPE = #{relativeType}
+	</select>
+</mapper>
+

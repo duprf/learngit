@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="dwz.persistence.mapper.ResChapterAuthorMapper">
+	<resultMap id="rm" type="dwz.persistence.beans.ResChapterAuthor">
+		<result property="id" jdbcType="INTEGER" column="ID"/>
+		<result property="aithorId" jdbcType="INTEGER" column="AITHOR_ID"/>
+		<result property="chapterId" jdbcType="INTEGER" column="CHAPTER_ID"/>
+		<result property="type" jdbcType="CHAR" column="TYPE"/>
+		<result property="sequence" jdbcType="INTEGER" column="SEQUENCE"/>
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID,
+		AITHOR_ID,
+		CHAPTER_ID,
+		TYPE,
+		SEQUENCE
+	</sql>
+	<select id="load" parameterType="java.lang.Integer" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM res_chapter_author 
+		WHERE 
+			ID = #{id} 
+	</select>
+	<!-- 查询所有的ID -->
+	<select id="findAllIds" resultType="java.lang.Integer">
+		SELECT ID FROM res_chapter_author
+	</select>
+
+	<!-- 按Id删除 -->
+	<delete id="delete" parameterType="java.lang.Integer">
+		DELETE FROM res_chapter_author WHERE
+		ID = #{id} 
+	</delete>
+	 <!-- 插入 -->
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO res_chapter_author (
+			ID,
+			AITHOR_ID,
+			CHAPTER_ID,
+			TYPE,
+			SEQUENCE
+		) VALUES (
+			#{id},
+			#{aithorId},
+			#{chapterId},
+			#{type},
+			#{sequence}
+		)
+	</insert>
+	
+	<select id="countAll" resultType="java.lang.Integer">
+		SELECT count(ID) FROM res_chapter_author	
+	</select>
+	
+	<select id="findAll" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM res_chapter_author
+	</select>
+
+	<!-- 更新 -->
+	<update id="updateSelective" parameterType="dwz.persistence.beans.ResChapterAuthor">
+		UPDATE res_chapter_author 
+			<set>
+				<if test="aithorId!=null">
+				AITHOR_ID = #{aithorId},
+				</if>
+				<if test="chapterId!=null">
+				CHAPTER_ID = #{chapterId},
+				</if>
+				<if test="type!=null">
+				TYPE = #{type},
+				</if>
+				<if test="sequence!=null">
+				SEQUENCE = #{sequence}
+				</if>
+			</set>
+		WHERE 
+			ID = #{id}
+	</update>
+	
+	<update id="update" parameterType="dwz.persistence.beans.ResChapterAuthor">
+		UPDATE res_chapter_author SET
+			AITHOR_ID = #{aithorId},
+			CHAPTER_ID = #{chapterId},
+			TYPE = #{type},
+			SEQUENCE = #{sequence}
+		WHERE 
+			ID = #{id} 
+	</update>
+	
+	<!-- 按ChapterId删除 -->
+	<delete id="deleteByChapterId" parameterType="java.lang.Integer">
+		DELETE FROM res_chapter_author WHERE
+		CHAPTER_ID = #{chapterId} 
+	</delete>
+</mapper>
+

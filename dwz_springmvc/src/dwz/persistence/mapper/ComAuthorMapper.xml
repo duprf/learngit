@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="dwz.persistence.mapper.ComAuthorMapper">
+	<resultMap id="rm" type="dwz.persistence.beans.ComAuthor">
+		<result property="id" jdbcType="INTEGER" column="ID"/>
+		<result property="categoryId" jdbcType="INTEGER" column="CATEGORY_ID"/>
+		<result property="iconPath" jdbcType="VARCHAR" column="ICON_PATH"/>
+		<result property="sn" jdbcType="VARCHAR" column="SN"/>
+		<result property="userId" jdbcType="INTEGER" column="USER_ID"/>
+		<result property="name" jdbcType="VARCHAR" column="NAME"/>
+		<result property="region" jdbcType="CHAR" column="REGION"/>
+		<result property="keywords" jdbcType="VARCHAR" column="KEYWORDS"/>
+		<result property="summary" jdbcType="LONGVARCHAR" column="SUMMARY"/>
+		<result property="description" jdbcType="LONGVARCHAR" column="DESCRIPTION"/>
+		<result property="pdfPath" jdbcType="VARCHAR" column="PDF_PATH"/>
+
+		<result property="authorType" jdbcType="CHAR" column="TYPE"/>
+		<result property="authorSequence" jdbcType="INTEGER" column="SEQUENCE"/>
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID,
+		CATEGORY_ID,
+		ICON_PATH,
+		SN,
+		USER_ID,
+		NAME,
+		REGION,
+		KEYWORDS,
+		SUMMARY,
+		DESCRIPTION,
+		PDF_PATH
+	</sql>
+	<select id="load" parameterType="java.lang.Integer" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM com_author 
+		WHERE 
+			ID = #{id} 
+	</select>
+	<!-- 查询所有的ID -->
+	<select id="findAllIds" resultType="java.lang.Integer">
+		SELECT ID FROM com_author
+	</select>
+
+	<!-- 按Id删除 -->
+	<delete id="delete" parameterType="java.lang.Integer">
+		DELETE FROM com_author WHERE
+		ID = #{id} 
+	</delete>
+	 <!-- 插入 -->
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO com_author (
+			ID,
+			CATEGORY_ID,
+			ICON_PATH,
+			SN,
+			USER_ID,
+			NAME,
+			REGION,
+			KEYWORDS,
+			SUMMARY,
+			DESCRIPTION,
+			PDF_PATH
+		) VALUES (
+			#{id},
+			#{categoryId},
+			#{iconPath},
+			#{sn},
+			#{userId},
+			#{name},
+			#{region},
+			#{keywords},
+			#{summary},
+			#{description},
+			#{pdfPath}
+		)
+	</insert>
+	
+	<select id="countAll" resultType="java.lang.Integer">
+		SELECT count(ID) FROM com_author	
+	</select>
+	
+	<select id="findAll" resultMap="rm">
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM com_author
+	</select>
+	<select id="findByChapter" parameterType="map" resultMap="rm">
+		SELECT 
+			a.ID, a.CATEGORY_ID, a.ICON_PATH, a.SN, a.USER_ID, a.NAME, a.REGION,
+			c.TYPE, c.SEQUENCE
+		FROM com_author a, res_chapter_author c
+		WHERE a.ID = c.AITHOR_ID AND c.CHAPTER_ID = #{chapterId} and c.TYPE = #{authorType} ORDER BY c.SEQUENCE LIMIT 0,1
+	</select>
+	<select id="findAllByChapter" resultMap="rm" parameterType="map">
+		SELECT 
+			a.ID, a.CATEGORY_ID, a.ICON_PATH, a.SN, a.USER_ID, a.NAME, a.REGION,
+			c.TYPE, c.SEQUENCE
+		FROM com_author a, res_chapter_author c
+		WHERE a.ID = c.AITHOR_ID AND c.CHAPTER_ID = #{chapterId} ORDER BY c.SEQUENCE
+	</select>
+	<select id="findPageBreakByCondition" resultMap="rm" parameterType="map">
+		SELECT 
+	        <include refid="Base_Column_List" />
+		from com_author 
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="categoryId != null">
+				 AND CATEGORY_ID = #{categoryId} 
+			</if>
+			<if test="region != null">
+				 AND REGION = #{region} 
+			</if>
+			<if test="keywords != null">
+				AND (
+					NAME LIKE "%"#{keywords}"%"
+					or SN LIKE #{keywords}"%"
+					or SUMMARY LIKE "%"#{keywords}"%"
+				)
+      		</if>
+      	</trim>
+      	order by NAME 
+	</select>
+	
+	<select id="findNumberByCondition" resultType="java.lang.Integer" parameterType="map">
+		select count(0) as c from com_author
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="categoryId != null">
+				 AND CATEGORY_ID = #{categoryId} 
+			</if>
+			<if test="region != null">
+				 AND REGION = #{region} 
+			</if>
+			<if test="keywords != null">
+				AND (
+					NAME LIKE "%"#{keywords}"%"
+					or SN LIKE #{keywords}"%"
+					or SUMMARY LIKE "%"#{keywords}"%"
+				)
+      		</if>
+      	</trim>
+	</select>
+		
+	<!-- 更新 -->
+	<update id="updateSelective" parameterType="dwz.persistence.beans.ComAuthor">
+		UPDATE com_author 
+			<set>
+				<if test="categoryId!=null">
+				CATEGORY_ID = #{categoryId},
+				</if>
+				<if test="iconPath!=null">
+				ICON_PATH = #{iconPath},
+				</if>
+				<if test="sn!=null">
+				SN = #{sn},
+				</if>
+				<if test="userId!=null">
+				USER_ID = #{userId},
+				</if>
+				<if test="name!=null">
+				NAME = #{name},
+				</if>
+				<if test="region!=null">
+				REGION = #{region},
+				</if>
+				<if test="keywords!=null">
+				KEYWORDS = #{keywords},
+				</if>
+				<if test="summary!=null">
+				SUMMARY = #{summary},
+				</if>
+				<if test="description!=null">
+				DESCRIPTION = #{description},
+				</if>
+				<if test="pdfPath!=null">
+				PDF_PATH = #{pdfPath}
+				</if>
+			</set>
+		WHERE 
+			ID = #{id}
+	</update>
+	
+	<update id="update" parameterType="dwz.persistence.beans.ComAuthor">
+		UPDATE com_author SET
+			CATEGORY_ID = #{categoryId},
+			ICON_PATH = #{iconPath},
+			SN = #{sn},
+			USER_ID = #{userId},
+			NAME = #{name},
+			REGION = #{region},
+			KEYWORDS = #{keywords},
+			SUMMARY = #{summary},
+			DESCRIPTION = #{description},
+			PDF_PATH = #{pdfPath}
+		WHERE 
+			ID = #{id} 
+	</update>
+	
+</mapper>
+
